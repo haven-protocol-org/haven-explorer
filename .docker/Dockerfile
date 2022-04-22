@@ -11,7 +11,7 @@ RUN apt-get update \
  && apt-get --no-install-recommends --yes install ca-certificates git wget libmysql++-dev libunwind-dev libcurl4-openssl-dev libzmq5 libzmq3-dev build-essential cmake pkg-config libssl-dev libunbound-dev libsodium-dev liblzma-dev libreadline6-dev libldns-dev libexpat1-dev doxygen graphviz libpgm-dev libudev-dev
 
 # Libboost
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz --no-check-certificate
 RUN tar -xvf boost_1_77_0.tar.gz
 RUN cd boost_1_77_0 \
   && ./bootstrap.sh \

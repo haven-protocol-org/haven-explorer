@@ -24,6 +24,7 @@ jobs:
         sudo ./b2 install -j2
     - name: build Haven
       run: |
+        mkdir src/haven-main/build/Linux/master/release/ -p
         cd src/haven-main/build/Linux/master/release/
         cmake -D CMAKE_BUILD_TYPE=Release ../../../..
         cmake --build . --target wallet --
