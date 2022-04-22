@@ -51,7 +51,7 @@ struct CurrentBlockchainStatus
 
     static string output_file;
 
-    static string deamon_url;
+    static string daemon_url;
 
     // how many blocks to read before thread goes to sleep
     static uint64_t blockchain_chunk_size;
@@ -71,6 +71,7 @@ struct CurrentBlockchainStatus
 
     static atomic<Emission> total_emission_atomic;
 
+    vector<pair<string, int64_t>> total_circulating_supply;
 
     static boost::thread m_thread;
 
@@ -107,6 +108,9 @@ struct CurrentBlockchainStatus
 
     static bool
     is_thread_running();
+
+    static vector<pair<string, string>>
+    get_circulating_supply();
 };
 
 }

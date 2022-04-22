@@ -154,8 +154,8 @@ sum_money_in_outputs(const json& _json);
 array<uint64_t, 4>
 summary_of_in_out_rct(
         const transaction& tx,
-        vector<pair<txout_to_key, uint64_t>>& output_pub_keys,
-        vector<txin_to_key>& input_key_imgs);
+        vector<pair<txout_target_v, uint64_t>>& output_pub_keys,
+        vector<txin_v>& input_key_imgs);
 
 // this version for mempool txs from json
 array<uint64_t, 6>
@@ -206,7 +206,7 @@ get_ouputs(const transaction& tx);
 vector<tuple<txout_to_key, uint64_t, uint64_t>>
 get_ouputs_tuple(const transaction& tx);
 
-vector<txin_to_key>
+vector<txin_v>
 get_key_images(const transaction& tx);
 
 
@@ -289,6 +289,41 @@ xmr_amount_to_str(const uint64_t& xmr_amount,
         {
             amount_str = fmt::format(_format, XMR_AMOUNT(xmr_amount));
         }
+    }
+
+    return amount_str;
+}
+static
+string
+atomic_units_to_normal(const string number){
+    std::cout << "number: " << number << std::endl;
+    string amount_str = "";
+    if (number.size() > 12) {
+        auto temp = number.substr(0, number.size() - 12);
+        size_t n = 0;
+        for (int i = temp.size() - 1; i >= 0; i--) {
+            amount_str += temp[i];
+            if ((n % 3) == 2) {
+                amount_str += ",";
+            }
+            n++;
+        }
+        std::reverse(amount_str.begin(), amount_str.end());
+    } else if (number.size() == 12) {
+        amount_str += "0.";
+        amount_str += number[0];
+    } else {
+        auto diff = 12 - number.size();
+        amount_str = "0.";
+        for (size_t i = 0; i < diff; i++) {
+            amount_str += "0";
+        }
+        amount_str += number[0];
+    }
+
+    //scrap the comma in the beginning
+    if (amount_str[0] == ',') {
+        amount_str = amount_str.substr(1);
     }
 
     return amount_str;

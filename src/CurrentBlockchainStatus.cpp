@@ -32,7 +32,7 @@ CurrentBlockchainStatus::start_monitor_blockchain_thread()
     {
         if (!load_current_emission_amount())
         {
-            cerr << "Emission file cant be read, got corrupted or has incorrect format:\n " << emmision_saved_file
+            cerr << "Emission file can't be read, got corrupted or has incorrect format:\n " << emmision_saved_file
                  << "\nEmission monitoring thread is not started.\nDelete the file and"
                  << " restart the explorer or disable emission monitoring."
                  << endl;
@@ -135,7 +135,7 @@ CurrentBlockchainStatus::calculate_emission_in_blocks(
 
         mcore->get_block_by_height(start_blk, blk);
 
-        uint64_t coinbase_amount = get_outs_money_amount(blk.miner_tx);
+        uint64_t coinbase_amount = get_outs_money_amount(blk.miner_tx)["XHV"];
 
         vector<transaction> txs;
         vector<crypto::hash> missed_txs;
@@ -205,7 +205,7 @@ CurrentBlockchainStatus::load_current_emission_amount()
 
     if (strs.empty())
     {
-        cerr << "Problem spliting string values form  emission_amount." << endl;
+        cerr << "Problem spliting string values from emission_amount." << endl;
         return false;
     }
 
@@ -297,13 +297,19 @@ CurrentBlockchainStatus::is_thread_running()
    return is_running;
 }
 
-bf::path CurrentBlockchainStatus::blockchain_path {"/home/mwo/.bitmonero/lmdb"};
+vector<pair<string, string>>
+CurrentBlockchainStatus::get_circulating_supply()
+{
+  return core_storage->get_db().get_circulating_supply();
+}
+
+bf::path CurrentBlockchainStatus::blockchain_path {"~/.haven/lmdb"};
 
 cryptonote::network_type CurrentBlockchainStatus::nettype {cryptonote::network_type::MAINNET};
 
 string CurrentBlockchainStatus::output_file {"emission_amount.txt"};
 
-string CurrentBlockchainStatus::deamon_url {"http:://127.0.0.1:18081"};
+string CurrentBlockchainStatus::daemon_url {"http:://127.0.0.1:17750"};
 
 uint64_t  CurrentBlockchainStatus::blockchain_chunk_size {10000};
 

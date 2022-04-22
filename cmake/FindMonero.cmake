@@ -28,7 +28,7 @@
 # (c) 2014-2016 cpp-ethereum contributors.
 #------------------------------------------------------------------------------
 
-set(LIBS common;blocks;cryptonote_basic;cryptonote_core;multisig;
+set(LIBS common;cryptonote_basic;cryptonote_core;multisig;offshore;
 		cryptonote_protocol;daemonizer;mnemonics;epee;lmdb;device;wallet-crypto;
 		blockchain_db;ringct;wallet;cncrypto;easylogging;version;
         checkpoints;randomx;hardforks;miniupnpc)

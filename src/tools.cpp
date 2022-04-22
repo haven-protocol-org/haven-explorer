@@ -239,8 +239,8 @@ generate_key_image(const crypto::key_derivation& derivation,
 string
 get_default_lmdb_folder(cryptonote::network_type nettype)
 {
-    // default path to monero folder
-    // on linux this is /home/<username>/.bitmonero
+    // default path to haven folder
+    // on linux this is /home/<username>/.haven
     string default_monero_dir = tools::get_default_data_dir();
 
     if (nettype == cryptonote::network_type::TESTNET)
@@ -344,65 +344,84 @@ sum_money_in_outputs(const json& _json)
 
 array<uint64_t, 4>
 summary_of_in_out_rct(
-        const transaction& tx,
-        vector<pair<txout_to_key, uint64_t>>& output_pub_keys,
-        vector<txin_to_key>& input_key_imgs)
-{
+    const transaction& tx,
+    vector<pair<txout_target_v, uint64_t>>& output_pub_keys,
+    vector<txin_v>& input_key_imgs
+){
 
     uint64_t xmr_outputs       {0};
     uint64_t xmr_inputs        {0};
     uint64_t mixin_no          {0};
     uint64_t num_nonrct_inputs {0};
 
-
     for (const tx_out& txout: tx.vout)
     {
-        if (txout.target.type() != typeid(txout_to_key))
-        {
-            // push empty pair.
-            output_pub_keys.push_back(pair<txout_to_key, uint64_t>{});
-            continue;
-        }
-
-        // get tx input key
-        const txout_to_key& txout_key
-                = boost::get<cryptonote::txout_to_key>(txout.target);
-
+      if (txout.target.type() == typeid(txout_to_key)) {
+        const txout_to_key& txout_key = boost::get<cryptonote::txout_to_key>(txout.target);
         output_pub_keys.push_back(make_pair(txout_key, txout.amount));
+      } else if (txout.target.type() == typeid(txout_offshore)) {
+        const txout_offshore& txout_key = (txout_offshore&) boost::get<cryptonote::txout_offshore>(txout.target);
+        output_pub_keys.push_back(make_pair(txout_key, txout.amount));
+      } else if (txout.target.type() == typeid(txout_xasset)) {
+        const txout_xasset& txout_key = (txout_xasset&) boost::get<cryptonote::txout_xasset>(txout.target);
+        output_pub_keys.push_back(make_pair(txout_key, txout.amount));
+      } else {
+        // push empty pair.
+        output_pub_keys.push_back(pair<txout_to_key, uint64_t>{});
+        continue;
+      }
 
-        xmr_outputs += txout.amount;
+      xmr_outputs += txout.amount;
     }
 
-    size_t input_no = tx.vin.size();
-
-    for (size_t i = 0; i < input_no; ++i)
+    for (size_t i = 0; i < tx.vin.size(); ++i)
     {
+        // get tx input key
+        const cryptonote::txin_v& tx_in = tx.vin[i];
 
-        if(tx.vin[i].type() != typeid(cryptonote::txin_to_key))
+        if (tx_in.type() != typeid(cryptonote::txin_to_key) && 
+            tx_in.type() != typeid(cryptonote::txin_offshore) &&
+            tx_in.type() != typeid(cryptonote::txin_onshore) &&
+            tx_in.type() != typeid(cryptonote::txin_xasset)
+        )
         {
             continue;
         }
 
-        // get tx input key
-        const cryptonote::txin_to_key& tx_in_to_key
-                = boost::get<cryptonote::txin_to_key>(tx.vin[i]);
+       
+        // get the input amount and key offsets
+        uint64_t amount = 0;
+        std::vector<uint64_t> key_offsets;
+        if (tx_in.type() == typeid(cryptonote::txin_to_key)) {
+            amount = boost::get<cryptonote::txin_to_key>(tx_in).amount;
+            key_offsets = boost::get<cryptonote::txin_to_key>(tx_in).key_offsets;
+        } else if (tx_in.type() == typeid(cryptonote::txin_offshore)) {
+            amount = boost::get<cryptonote::txin_offshore>(tx_in).amount;
+            key_offsets = boost::get<cryptonote::txin_offshore>(tx_in).key_offsets;
+        } else if (tx_in.type() == typeid(cryptonote::txin_onshore)) {
+            amount = boost::get<cryptonote::txin_onshore>(tx_in).amount;
+            key_offsets = boost::get<cryptonote::txin_onshore>(tx_in).key_offsets;
+        } else {
+            amount = boost::get<cryptonote::txin_xasset>(tx_in).amount;
+            key_offsets = boost::get<cryptonote::txin_xasset>(tx_in).key_offsets;
+        }
 
-        xmr_inputs += tx_in_to_key.amount;
+        // increase xmr_inputs
+        xmr_inputs += amount;
 
-        if (tx_in_to_key.amount != 0)
+        if (amount != 0)
         {
             ++num_nonrct_inputs;
         }
 
         if (mixin_no == 0)
         {
-            mixin_no = tx_in_to_key.key_offsets.size();
+            mixin_no = key_offsets.size();
         }
 
-        input_key_imgs.push_back(tx_in_to_key);
+        input_key_imgs.push_back(tx_in);
 
     } //  for (size_t i = 0; i < input_no; ++i)
-
 
     return {xmr_outputs, xmr_inputs, mixin_no, num_nonrct_inputs};
 };
@@ -746,26 +765,27 @@ get_mixin_no_in_txs(const vector<transaction>& txs)
 }
 
 
-vector<txin_to_key>
+vector<txin_v>
 get_key_images(const transaction& tx)
 {
-    vector<txin_to_key> key_images;
+    vector<txin_v> key_images;
 
     size_t input_no = tx.vin.size();
 
     for (size_t i = 0; i < input_no; ++i)
     {
+        // get tx input key
+        const cryptonote::txin_v& tx_in = tx.vin[i];
 
-        if(tx.vin[i].type() != typeid(txin_to_key))
-        {
+        if (tx_in.type() != typeid(cryptonote::txin_to_key) && 
+            tx_in.type() != typeid(cryptonote::txin_offshore) &&
+            tx_in.type() != typeid(cryptonote::txin_onshore) &&
+            tx_in.type() != typeid(cryptonote::txin_xasset)
+        ){
             continue;
         }
 
-        // get tx input key
-        const txin_to_key& tx_in_to_key
-                = boost::get<cryptonote::txin_to_key>(tx.vin[i]);
-
-        key_images.push_back(tx_in_to_key);
+        key_images.push_back(tx_in);
     }
 
     return key_images;
@@ -937,7 +957,9 @@ decode_ringct(rct::rctSig const& rv,
             case rct::RCTTypeSimple:
             case rct::RCTTypeBulletproof:
             case rct::RCTTypeBulletproof2:
-            case rct::RCTTypeCLSAG:                
+            case rct::RCTTypeCLSAG:
+            case rct::RCTTypeCLSAGN:
+            case rct::RCTTypeHaven2:
                 amount = rct::decodeRctSimple(rv,
                                               rct::sk2rct(scalar1),
                                               i,

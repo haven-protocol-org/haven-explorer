@@ -22,6 +22,10 @@ tr, li, #pages, .info {
     height: 22px;
 }
 
+tr:hover {
+    background-color: darkgray;
+}
+
 #pages
 {
     margin-top: 15px;

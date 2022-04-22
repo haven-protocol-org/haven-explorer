@@ -55,7 +55,7 @@
 
     {{#emission}}
         <h3 style="font-size: 12px; margin-top: 2px">
-            Monero emission (fees) is {{amount}} ({{fee_amount}}) as of {{blk_no}} block
+            Haven emission (fees) is {{amount}} ({{fee_amount}}) as of block {{blk_no}} (<a href="/supply">Circulating Supply</a>)
         </h3>
     {{/emission}}
 
@@ -77,14 +77,14 @@
 
             <table class="center">
                 <tr>
-                    <td>height</td>
-                    <td>age {{age_format}}<!--(Δm)--></td>
-                    <td>size [kB]<!--(Δm)--></td>
+                    <td>Block Height</td>
+                    <td>Block Age {{age_format}}<!--(Δm)--></td>
+                    <td>Block size [kB]<!--(Δm)--></td>
                     <td>transaction hash</td>
-                    <td>fee [&#181;&#x271]</td>
-                    <td>outputs</td>
-                    <td>in/out</td>
-                    <td>tx size [kB]</td>
+                    <td>Tx Fee [&#181;&#x271]</td>
+                    <td>Tx Outputs</td>
+                    <td>TX in/out</td>
+                    <td>Tx size [kB]</td>
                 </tr>
                 {{#txs}}
                 <tr>
@@ -92,7 +92,7 @@
                     <td>{{age}}<!--{{time_delta}}--></td>
                     <td>{{blk_size}}</td>
                     <td><a href="/tx/{{hash}}">{{hash}}</a></td>
-                    <td>{{fee_micro}}</td>
+                    <td>{{tx_fee}}<small>{{fee_asset}}</small></td>
                     <td>{{sum_outputs_short}}</td>
                     <td>{{no_inputs}}/{{no_outputs}}</td>
                     <td>{{tx_size_short}}</td>
