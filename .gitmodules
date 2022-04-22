@@ -1,0 +1,3 @@
+[submodule "src/haven-main"]
+	path = src/haven-main
+	url = https://github.com/haven-protocol-org/haven-main.git
