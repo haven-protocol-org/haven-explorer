@@ -1,6 +1,6 @@
 # Onion Monero Blockchain Explorer
 
-Currently available Monero blockchain explorers have several limitations which are of
+Currently available Haven blockchain explorers have several limitations which are of
 special importance to privacy-oriented users:
 
  - they use JavaScript,
@@ -8,13 +8,12 @@ special importance to privacy-oriented users:
  - track users activates through google analytics,
  - are closed sourced,
  - are not available as hidden services,
- - do not support Monero testnet nor stagenet networks,
  - have limited JSON API.
 
 
 In this example, these limitations are addressed by development of
-an Onion Monero Blockchain Explorer. The example not only shows how to use
-Monero C++ libraries, but also demonstrates how to use:
+an Onion Haven Blockchain Explorer. The example not only shows how to use
+Haven C++ libraries, but also demonstrates how to use:
 
  - [crow](https://github.com/ipkn/crow) - C++ micro web framework
  - [mstch](https://github.com/no1msd/mstch) - C++ {{mustache}} templates
@@ -23,33 +22,18 @@ Monero C++ libraries, but also demonstrates how to use:
 
 ## Explorer hosts
 
-Clearnet versions:
- - [https://xmrchain.net/](https://xmrchain.net/) - https enabled, most popular and very stable.
- - [https://monerohash.com/explorer/](https://monerohash.com/explorer/) - nice looking one, https enabled.
- - [http://monerochain.com/](http://monerochain.com/) - JSON API based, multiple nodes.   
- - [https://blox.minexmr.com/](https://blox.minexmr.com/) - - https enabled.
- - [https://community.xmr.to/explorer/mainnet/](https://community.xmr.to/explorer/mainnet/)
+Mainnet versions:
+ - [https://explorer.havenprotocol.org/](https://explorer.havenprotocol.org/) - https enabled, most popular and very stable.
 
 Testnet version:
 
- - [https://testnet.xmrchain.com/](https://testnet.xmrchain.com/) - https enabled.
- - [https://community.xmr.to/explorer/testnet/](https://community.xmr.to/explorer/testnet/)
+ - [https://explorer-testnet.havenprotocol.org/](https://explorer-testnet.havenprotocol.org/) - https enabled.
 
 Stagenet version:
  
- - [https://stagenet.xmrchain.net/](https://stagenet.xmrchain.net/)
- - [https://monero-stagenet.exan.tech/](https://monero-stagenet.exan.tech/)
- - [http://162.210.173.150:8083/](http://162.210.173.150:8083/)
- - [https://community.xmr.to/explorer/stagenet/](https://community.xmr.to/explorer/stagenet/)
+ - [https://explorer-stagenet.havenprotocol.org/](https://explorer-stagenet.havenprotocol.org/) - https enabled.
 
-i2p users (main Monero network):
 
- - [http://7o4gezpkye6ekibhgpkg7v626ze4idsirapufzrefkdysa6zxhha.b32.i2p/](http://7o4gezpkye6ekibhgpkg7v626ze4idsirapufzrefkdysa6zxhha.b32.i2p/)
-
-Alternative block explorers:
-
-- [http://moneroblocks.info](http://moneroblocks.info/)
-- [https://monerovision.com](https://monerovision.com)
 
 
 ## Haven Blockchain Explorer features
