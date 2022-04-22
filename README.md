@@ -52,9 +52,9 @@ Alternative block explorers:
 - [https://monerovision.com](https://monerovision.com)
 
 
-## Onion Monero Blockchain Explorer features
+## Haven Blockchain Explorer features
 
-The key features of the Onion Monero Blockchain Explorer are:
+The key features of the Haven Blockchain Explorer are:
 
  - no cookies, no web analytics trackers, no images,
  - open sourced,
@@ -62,12 +62,12 @@ The key features of the Onion Monero Blockchain Explorer are:
  - showing encrypted payments ID,
  - showing ring signatures,
  - showing transaction extra field,
- - showing public components of Monero addresses,
- - decoding which outputs and mixins belong to the given Monero address and viewkey,
- - can prove that you send Monero to someone,
+ - showing public components of Haven addresses,
+ - decoding which outputs and mixins belong to the given Haven address and viewkey,
+ - can prove that you send Haven to someone,
  - detailed information about ring members, such as, their age, timescale and their ring sizes,
  - showing number of amount output indices,
- - support Monero testnet and stagnet networks,
+ - support Haven testnet and stagnet networks,
  - tx checker and pusher for online pushing of transactions,
  - estimate possible spendings based on address and viewkey,
  - can provide total amount of all miner fees,
@@ -82,12 +82,12 @@ Current development branch:
 
  - https://github.com/moneroexamples/onion-monero-blockchain-explorer/tree/devel
 
-Note: `devel` branch of the explorer follows `master` branch of the monero!
+Note: `devel` branch of the explorer follows `master` branch of the Haven!
 
 ## Compilation on Ubuntu 18.04/20.04
 
 
-#### Monero download and compilation
+#### Haven download and compilation
 
 To download and compile recent Monero follow instructions
 in the following link:
@@ -96,7 +96,7 @@ https://github.com/moneroexamples/monero-compilation/blob/master/README.md
 
 ##### Compile and run the explorer
 
-Once the Monero compiles, the explorer can be downloaded and compiled
+the explorer can be downloaded and compiled
 as follows:
 
 ```bash
@@ -104,16 +104,24 @@ as follows:
 cd ~
 
 # download the source code 
-git clone https://github.com/moneroexamples/onion-monero-blockchain-explorer.git
+git clone --recursive https://github.com/haven-protocol-org/haven-explorer.git
 
 # enter the downloaded sourced code folder
-cd onion-monero-blockchain-explorer
+cd haven-explorer
 
 # make a build folder and enter it
+mkdir src/haven-main/build/Linux/master/release/
+cd src/haven-main/build/Linux/master/release/
+cmake -D CMAKE_BUILD_TYPE=Release ../../../..
+cmake --build . --target wallet --
+cmake --build . --target daemonizer --
+cmake --build . --target cryptonote_protocol --
+
+cd ../../../../../../
 mkdir build && cd build
 
 # create the makefile
-cmake ..
+cmake -DMONERO_DIR=$PWD/../src/haven-main ..
 
 # compile
 make
@@ -125,13 +133,13 @@ To run it:
 ./xmrblocks
 ```
 
-By default it will look for blockchain in its default location i.e., `~/.bitmonero/lmdb`.
+By default it will look for blockchain in its default location i.e., `~/.haven/lmdb`.
 You can use `-b` option if its in different location.
 
 For example:
 
 ```bash
-./xmrblocks -b /home/mwo/non-defult-monero-location/lmdb/
+./xmrblocks -b /home/mwo/non-default-haven-location/lmdb/
 ```
 
 Example output:
