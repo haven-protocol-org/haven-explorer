@@ -46,7 +46,7 @@ jobs:
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-merge-multiplatform-images:
+  merge-multiplatform-images:
     needs: build-docker
     runs-on: ubuntu-latest
     steps:
