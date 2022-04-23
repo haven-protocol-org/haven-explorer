@@ -30,17 +30,20 @@ jobs:
         cmake --build . --target wallet --
         cmake --build . --target daemonizer --
         cmake --build . --target cryptonote_protocol --
-    - name: build haven explorer
-      run: |
-        ./build-block-explorer.sh -j2
+    - name: Build Haven Explorer
+      run : |
+        mkdir build -p
+        cd build
+        cmake -DMONERO_DIR=$PWD/../src/haven-main ..
+        make
     - name: package haven explorer
       run: |
-        cd onion-monero-blockchain-explorer/build/
+        cd build/
         tar -czvf haven-linux-explorer-glibc229.tar.gz xmrblocks templates
     - uses: actions/upload-artifact@v2
       with:
         name: haven-linux-explorer-glibc229.tar.gz
-        path: haven-blockchain-explorer/onion-monero-blockchain-explorer/build/haven-linux-explorer-glibc229.tar.gz
+        path: haven-explorer/build/haven-linux-explorer-glibc229.tar.gz
         retention-days: 10
   
   upload-linux-explorer-glibc-2-29:
@@ -80,13 +83,13 @@ jobs:
     steps:
     - uses: actions/download-artifact@v2
       with:
-        name: haven-linux-glibc229.tar.gz
+        name: haven-linux-explorer-glibc229.tar.gz
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: haven-linux-glibc229.tar.gz
-        asset_name: haven-linux-glibc229.tar.gz
+        file: haven-linux-explorer-glibc229.tar.gz
+        asset_name: haven-linux-explorer-glibc229.tar.gz
         tag: ${{ github.ref }}
         overwrite: true
         body: ""

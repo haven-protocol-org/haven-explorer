@@ -1,4 +1,4 @@
-# Onion Monero Blockchain Explorer
+# Onion Haven Blockchain Explorer
 
 Currently available Haven blockchain explorers have several limitations which are of
 special importance to privacy-oriented users:
