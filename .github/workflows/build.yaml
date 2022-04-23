@@ -35,7 +35,7 @@ jobs:
         mkdir build -p
         cd build
         cmake -DMONERO_DIR=$PWD/../src/haven-main ..
-        make
+        make -j2
     - name: package haven explorer
       run: |
         cd build/

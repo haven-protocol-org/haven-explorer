@@ -1,6 +1,5 @@
 FROM ubuntu:20.04 as builder
 
-ENV CXXFLAGS="-DSTACK_TRACE:BOOL -DELPP_FEATURE_CRASH_LOG"
 ARG HAVEN_VERSION=v2.2.3
 ARG TARGETOS
 ARG TARGETARCH
@@ -31,5 +30,19 @@ RUN cmake --build . --target cryptonote_protocol --
 WORKDIR /explorer/build
 
 RUN cmake -DMONERO_DIR=$PWD/../src/haven-main ..
-RUN make
+RUN make -j2
 
+FROM ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get --no-install-recommends --yes install libsodium23 unbound libatomic1 libunwind8
+
+COPY --from=builder /usr/local/lib/libboost* /usr/local/lib/
+
+COPY --from=builder /explorer/build/xmrblocks /explorer/
+COPY --from=builder /explorer/build/templates /explorer/
+
+WORKDIR /explorer
+
+CMD ["./xmrblocks"]
