@@ -6,7 +6,7 @@ jobs:
   build-linux-explorer-glibc-2-29:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: recursive
     - name: remove bundled boost
@@ -45,7 +45,7 @@ jobs:
         name: haven-linux-explorer-glibc229.tar.gz
         path: build/haven-linux-explorer-glibc229.tar.gz
         retention-days: 10
-  
+
   upload-linux-explorer-glibc-2-29:
     needs: build-linux-explorer-glibc-2-29
     runs-on: ubuntu-20.04
@@ -75,7 +75,7 @@ jobs:
         export payload='{"username": "Github", "content": "Explorer (Linux 2.29) : '${BINARY_URL}${GITHUB_REF##*/}${BINARY_NAME}' (sha256 checksum : '${checksum}')"}'
         echo $payload
         curl -X POST -H "Content-Type: application/json" -d "$payload" $DISCORD_WEBHOOK
-      
+
   publish-linux-explorer-glibc-2-29:
     needs: build-linux-explorer-glibc-2-29
     if: startsWith(github.ref, 'refs/tags/v')
