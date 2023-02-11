@@ -39,9 +39,10 @@ RUN apt-get update \
  && apt-get --no-install-recommends --yes install libsodium23 unbound libatomic1 libunwind8
 
 COPY --from=builder /usr/local/lib/libboost* /usr/local/lib/
+COPY --from=builder /usr/local/include/boost/* /usr/local/include/boost/
 
 COPY --from=builder /explorer/build/xmrblocks /explorer/
-COPY --from=builder /explorer/build/templates /explorer/
+COPY --from=builder /explorer/build/templates /explorer/templates/
 
 WORKDIR /explorer
 
