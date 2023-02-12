@@ -39,11 +39,11 @@ RUN make -j2
 
 FROM alpine:3.15 as runner
 
-RUN apk --no-cache add boost-dev libatomic libsodium libunwind
+RUN apk add zip
 
-COPY --from=builder /explorer/build/xmrblocks /explorer/
-COPY --from=builder /explorer/build/templates /explorer/templates/
+COPY --from=builder /lib.zip .
+RUN unzip -o lib.zip && rm -rf lib.zip
 
 WORKDIR /explorer
-
-CMD ["./xmrblocks"]
+COPY --from=builder /explorer/build/xmrblocks /explorer/
+COPY --from=builder /explorer/build/templates /explorer/templates/
