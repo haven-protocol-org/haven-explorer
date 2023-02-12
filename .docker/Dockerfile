@@ -19,7 +19,7 @@ RUN apk --no-cache add libunwind-dev
 RUN apk --no-cache add boost-dev
 RUN apk --no-cache add boost-static
 RUN apk --no-cache add curl-static
-
+RUN apk --no-cache add zip
 
 WORKDIR /explorer
 COPY . .
@@ -36,6 +36,8 @@ WORKDIR /explorer/build
 
 RUN cmake -D STACK_TRACE:BOOL=OFF -DMONERO_DIR=$PWD/../src/haven-main ..
 RUN make -j2
+
+RUN zip /lib.zip $(ldd xmrblocks | grep -E '/[^\ ]*' -o)
 
 FROM alpine:3.15 as runner
 
