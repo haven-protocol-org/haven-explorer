@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM alpine:3.15 as builder
 
 ARG HAVEN_VERSION=v3.0.8
 ARG TARGETOS
@@ -6,15 +6,20 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update \
- && apt-get --no-install-recommends --yes install ca-certificates git wget libmysql++-dev libunwind-dev libcurl4-openssl-dev libzmq5 libzmq3-dev build-essential cmake pkg-config libssl-dev libunbound-dev libsodium-dev liblzma-dev libreadline6-dev libldns-dev libexpat1-dev doxygen graphviz libpgm-dev libudev-dev
+RUN apk --no-cache add git
+RUN apk --no-cache add bash
+RUN apk --no-cache add build-base
+RUN apk --no-cache add patch
+RUN apk --no-cache add cmake
+RUN apk --no-cache add openssl-dev
+RUN apk --no-cache add linux-headers
+RUN apk --no-cache add zeromq-dev
+RUN apk --no-cache add libexecinfo-dev
+RUN apk --no-cache add libunwind-dev
+RUN apk --no-cache add boost-dev
+RUN apk --no-cache add boost-static
+RUN apk --no-cache add curl-static
 
-# Libboost
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz --no-check-certificate
-RUN tar -xvf boost_1_77_0.tar.gz
-RUN cd boost_1_77_0 \
-  && ./bootstrap.sh \
-  && ./b2 install -j2
 
 WORKDIR /explorer
 COPY . .
@@ -22,24 +27,19 @@ RUN git submodule update --init --recursive
 
 # Building Haven
 WORKDIR src/haven-main/build/Linux/master/release/
-RUN cmake -D CMAKE_BUILD_TYPE=Release ../../../..
+RUN cmake -D CMAKE_BUILD_TYPE=Release -D STACK_TRACE:BOOL=OFF ../../../..
 RUN cmake --build . --target wallet --
 RUN cmake --build . --target daemonizer --
 RUN cmake --build . --target cryptonote_protocol --
 
 WORKDIR /explorer/build
 
-RUN cmake -DMONERO_DIR=$PWD/../src/haven-main ..
+RUN cmake -D STACK_TRACE:BOOL=OFF -DMONERO_DIR=$PWD/../src/haven-main ..
 RUN make -j2
 
-FROM ubuntu:20.04
+FROM alpine:3.15 as runner
 
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
- && apt-get --no-install-recommends --yes install libsodium23 unbound libatomic1 libunwind8
-
-COPY --from=builder /usr/local/lib/libboost* /usr/local/lib/
-COPY --from=builder /usr/local/include/boost/* /usr/local/include/boost/
+RUN apk --no-cache add boost-dev libatomic libsodium libunwind
 
 COPY --from=builder /explorer/build/xmrblocks /explorer/
 COPY --from=builder /explorer/build/templates /explorer/templates/
