@@ -1,12 +1,13 @@
 FROM alpine:3.15 as builder
 
-ARG HAVEN_VERSION=v3.0.8
+ARG HAVEN_VERSION=v3.1.9
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apk --no-cache add git
+RUN apk --no-cache add unbound-dev
 RUN apk --no-cache add bash
 RUN apk --no-cache add build-base
 RUN apk --no-cache add patch
