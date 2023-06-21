@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0.2)
 
 set(PROJECT_NAME
         xmrblocks)
@@ -139,18 +139,20 @@ set(LIBRARIES
         myext
         mstch
         wallet
+        cryptonote_core
+        cryptonote_basic
+        cryptonote_protocol
+        cryptonote_format_utils_basic
         blockchain_db
         device
         ${WALLET_CRYPTO}
-        cryptonote_core
-        cryptonote_protocol
-        cryptonote_basic
         multisig
         daemonizer
-        offshore
+        blocks
         lmdb
         ringct
         ringct_basic
+        offshore
         common
         mnemonics
         easylogging

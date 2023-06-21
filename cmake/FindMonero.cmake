@@ -28,7 +28,7 @@
 # (c) 2014-2016 cpp-ethereum contributors.
 #------------------------------------------------------------------------------
 
-set(LIBS common;cryptonote_basic;cryptonote_core;multisig;offshore;
+set(LIBS common;blocks;cryptonote_basic;cryptonote_core;multisig;offshore;
 		cryptonote_protocol;daemonizer;mnemonics;epee;lmdb;device;wallet-crypto;
 		blockchain_db;ringct;wallet;cncrypto;easylogging;version;
         checkpoints;randomx;hardforks;miniupnpc)
@@ -67,7 +67,13 @@ if (EXISTS ${MONERO_BUILD_DIR}/src/ringct/libringct_basic.a)
 			PROPERTY IMPORTED_LOCATION ${MONERO_BUILD_DIR}/src/ringct/libringct_basic.a)
 endif()
 
-
+if (EXISTS ${MONERO_BUILD_DIR}/src/cryptonote_basic/libcryptonote_format_utils_basic.a)
+    message(STATUS FindMonero " found libcryptonote_format_utils_basic.a")
+    add_library(cryptonote_format_utils_basic STATIC IMPORTED)
+    set_property(TARGET cryptonote_format_utils_basic
+            PROPERTY IMPORTED_LOCATION ${MONERO_BUILD_DIR}/src/cryptonote_basic/libcryptonote_format_utils_basic.a)
+endif()
+            
 message(STATUS ${MONERO_SOURCE_DIR}/build)
 
 # include monero headers
