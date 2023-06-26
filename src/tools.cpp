@@ -365,7 +365,14 @@ summary_of_in_out_rct(
       } else if (txout.target.type() == typeid(txout_xasset)) {
         const txout_xasset& txout_key = (txout_xasset&) boost::get<cryptonote::txout_xasset>(txout.target);
         output_pub_keys.push_back(make_pair(txout_key, txout.amount));
+      } else if (txout.target.type() == typeid(txout_haven_key)) {
+        const txout_haven_key& txout_key = (txout_haven_key&) boost::get<cryptonote::txout_haven_key>(txout.target);
+        output_pub_keys.push_back(make_pair(txout_key, txout.amount));
+      } else if (txout.target.type() == typeid(txout_haven_tagged_key)) {
+        const txout_haven_tagged_key& txout_key = (txout_haven_tagged_key&) boost::get<cryptonote::txout_haven_tagged_key>(txout.target);
+        output_pub_keys.push_back(make_pair(txout_key, txout.amount));
       } else {
+        cout << "unexpected output type detected : " << txout.target.type().name() << endl;
         // push empty pair.
         output_pub_keys.push_back(pair<txout_to_key, uint64_t>{});
         continue;
@@ -382,7 +389,8 @@ summary_of_in_out_rct(
         if (tx_in.type() != typeid(cryptonote::txin_to_key) && 
             tx_in.type() != typeid(cryptonote::txin_offshore) &&
             tx_in.type() != typeid(cryptonote::txin_onshore) &&
-            tx_in.type() != typeid(cryptonote::txin_xasset)
+            tx_in.type() != typeid(cryptonote::txin_xasset) &&
+            tx_in.type() != typeid(cryptonote::txin_haven_key)
         )
         {
             continue;
@@ -401,9 +409,12 @@ summary_of_in_out_rct(
         } else if (tx_in.type() == typeid(cryptonote::txin_onshore)) {
             amount = boost::get<cryptonote::txin_onshore>(tx_in).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(tx_in).key_offsets;
-        } else {
+        } else if (tx_in.type() == typeid(cryptonote::txin_xasset)) {
             amount = boost::get<cryptonote::txin_xasset>(tx_in).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(tx_in).key_offsets;
+        } else if (tx_in.type() == typeid(cryptonote::txin_haven_key)) {
+            amount = boost::get<cryptonote::txin_haven_key>(tx_in).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(tx_in).key_offsets;
         }
 
         // increase xmr_inputs
@@ -1188,16 +1199,12 @@ is_output_ours(const size_t& output_index,
     //cout << "\n" << tx.vout.size() << " " << output_index << endl;
 
     // get tx output public key
-    const txout_to_key tx_out_to_key
-            = boost::get<txout_to_key>(tx.vout[output_index].target);
-
-
-    if (tx_out_to_key.key == pubkey)
-    {
-        return true;
+    crypto::public_key output_public_key;
+    bool ok = cryptonote::get_output_public_key(tx.vout[output_index], output_public_key);
+    if (!ok) {
+      // HERE BE DRAGONS!!!
     }
-
-    return false;
+    return (output_public_key == pubkey);
 }
 
 

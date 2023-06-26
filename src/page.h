@@ -1535,9 +1535,12 @@ show_ringmembers_hex(string const& tx_hash_str)
         } else if (in_key.type() == typeid(cryptonote::txin_onshore)) {
             amount = boost::get<cryptonote::txin_onshore>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(in_key).key_offsets;
-        } else {
+        } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
             amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(in_key).key_offsets;
+        } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+            amount = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(in_key).key_offsets;
         }
 
         // get absolute offsets of mixins
@@ -1625,9 +1628,12 @@ show_ringmemberstx_hex(string const& tx_hash_str)
         } else if (in_key.type() == typeid(cryptonote::txin_onshore)) {
             amount = boost::get<cryptonote::txin_onshore>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(in_key).key_offsets;
-        } else {
+        } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
             amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(in_key).key_offsets;
+        } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+            amount = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(in_key).key_offsets;
         }
 
         // get absolute offsets of mixins
@@ -1865,10 +1871,14 @@ show_ringmemberstx_jsonhex(string const& tx_hash_str)
             amount = boost::get<cryptonote::txin_onshore>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
-        } else {
+        } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
             amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+        } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+            amount = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(in_key).key_offsets;
+            k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
         }
 
 
@@ -2426,10 +2436,14 @@ show_my_outputs(string tx_hash_str,
             amount_in = boost::get<cryptonote::txin_onshore>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
-        } else {
+        } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
             amount_in = boost::get<cryptonote::txin_xasset>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+        } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+            amount_in = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(in_key).key_offsets;
+            k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
         }
 
         // get absolute offsets of mixins
@@ -2614,13 +2628,15 @@ show_my_outputs(string tx_hash_str,
 
             // for each output in mixin tx, find the one from key_image
             // and check if its ours.
-            for (const auto& mix_out: output_pub_keys)
+            //for (const auto& mix_out: output_pub_keys)
+            for (size_t i=0; i<tx.vout.size(); ++i) 
             {
 
-                txout_to_key const& txout_k      = std::get<0>(mix_out);
-                uint64_t amount           = std::get<1>(mix_out);
-                uint64_t output_idx_in_tx = std::get<2>(mix_out);             
-
+              //txout_to_key const& txout_k      = std::get<0>(mix_out);
+              //uint64_t amount           = std::get<1>(mix_out);
+              //uint64_t output_idx_in_tx = std::get<2>(mix_out);             
+              uint64_t amount = tx.vout[i].amount;
+              
                 //cout << " - " << pod_to_hex(txout_k.key) << endl;
 
 //                        // analyze only those output keys
@@ -2636,24 +2652,29 @@ show_my_outputs(string tx_hash_str,
                 public_key tx_pubkey_generated;
 
                 derive_public_key(derivation,
-                                  output_idx_in_tx,
+                                  i,
                                   address_info.address.m_spend_public_key,
                                   tx_pubkey_generated);
 
                 // check if generated public key matches the current output's key
-                bool mine_output = (txout_k.key == tx_pubkey_generated);
+                public_key output_public_key;
+                bool ok = cryptonote::get_output_public_key(tx.vout[i], output_public_key);
+                if (!ok) {
+                  // HERE BE DRAGONS!!!
+                }
+                bool mine_output = (output_public_key == tx_pubkey_generated);
 
                 bool with_additional = false;
 
                 if (!mine_output && mixin_additional_tx_pub_keys.size()
                         == output_pub_keys.size())
                 {
-                    derive_public_key(additional_derivations[output_idx_in_tx],
-                                      output_idx_in_tx,
+                    derive_public_key(additional_derivations[i],
+                                      i,
                                       address_info.address.m_spend_public_key,
                                       tx_pubkey_generated);
 
-                    mine_output = (txout_k.key == tx_pubkey_generated);
+                    mine_output = (output_public_key == tx_pubkey_generated);
 
                     with_additional = true;
                 }
@@ -2673,9 +2694,9 @@ show_my_outputs(string tx_hash_str,
                         r = decode_ringct(
                                     mixin_tx.rct_signatures,
                                     with_additional
-                                    ? additional_derivations[output_idx_in_tx] : derivation,
-                                    output_idx_in_tx,
-                                    mixin_tx.rct_signatures.ecdhInfo[output_idx_in_tx].mask,
+                                    ? additional_derivations[i] : derivation,
+                                    i,
+                                    mixin_tx.rct_signatures.ecdhInfo[i].mask,
                                     rct_amount);
 
                         if (!r)
@@ -2688,7 +2709,7 @@ show_my_outputs(string tx_hash_str,
                 }
 
                 // makre only
-                bool output_match = (txout_k.key == output_data.pubkey);
+                bool output_match = (output_public_key == output_data.pubkey);
 
                 // mark only first output_match as the "real" one
                 // due to luck of better method of gussing which output
@@ -2697,10 +2718,10 @@ show_my_outputs(string tx_hash_str,
 
                 // save our mixnin's public keys
                 found_outputs.push_back(mstch::map {
-                        {"my_public_key"   , pod_to_hex(txout_k.key)},
+                        {"my_public_key"   , pod_to_hex(output_public_key)},
                         {"tx_hash"         , tx_hash_str},
                         {"mine_output"     , mine_output},
-                        {"out_idx"         , output_idx_in_tx},
+                        {"out_idx"         , i},
                         {"formed_output_pk", out_pub_key_str},
                         {"out_in_match"    , output_match},
                         {"amount"          , xmreg::xmr_amount_to_str(amount)}
@@ -2716,7 +2737,7 @@ show_my_outputs(string tx_hash_str,
                     // increase sum_mixin_xmr only when
                     // public key of an outputs used in ring signature,
                     // matches a public key in a mixin_tx
-                    if (txout_k.key != output_data.pubkey)
+                    if (output_public_key != output_data.pubkey)
                         continue;              
 
                     // sum up only first output matched found in each input
@@ -3696,8 +3717,8 @@ show_pushrawtx(string raw_tx_data, string action)
                 k_image = boost::get<cryptonote::txin_offshore>(in_key).k_image;
             } else if (in_key.type() == typeid(cryptonote::txin_onshore)) {
                 k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
-            } else {
-                k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+            } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+                k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
             }
 
             if (core_storage->have_tx_keyimg_as_spent(k_image))
@@ -4069,8 +4090,10 @@ show_checkcheckrawoutput(string raw_data, string viewkey_str)
 
         const transaction_prefix& txp = td.m_tx;
 
+        cerr << "***** 3" << endl;
         txout_to_key txout_key = boost::get<txout_to_key>(
                 txp.vout[td.m_internal_output_index].target);
+        cerr << "3 *****" << endl;
 
         uint64_t xmr_amount = td.amount();
 
@@ -4114,10 +4137,12 @@ show_checkcheckrawoutput(string raw_data, string viewkey_str)
 
                 if (!r)
                 {
+                  cerr << "***** 4" << endl;
                     string error_msg = fmt::format("Cant decode RingCT for output: {:s}",
                         txp.vout[td.m_internal_output_index].target.type() == typeid(txout_to_key) ? boost::get<txout_to_key>(txp.vout[td.m_internal_output_index].target).key :
                         txp.vout[td.m_internal_output_index].target.type() == typeid(txout_offshore) ? boost::get<txout_offshore>(txp.vout[td.m_internal_output_index].target).key :
                     boost::get<txout_xasset>(txp.vout[td.m_internal_output_index].target).key);
+                  cerr << "4 *****" << endl;
 
                     context["has_error"] = true;
                     context["error_msg"] = error_msg;
@@ -4147,6 +4172,7 @@ show_checkcheckrawoutput(string raw_data, string viewkey_str)
             context["are_key_images_known"] = true;
         }
 
+        cerr << "***** 5" << endl;
         mstch::map output_info {
 	        {"output_no"           , fmt::format("{:03d}", output_no)},
 	        {"output_pub_key"      , REMOVE_HASH_BRAKETS(fmt::format("{:s}",
@@ -4161,6 +4187,7 @@ show_checkcheckrawoutput(string raw_data, string viewkey_str)
 		    {"is_spent"            , is_output_spent},
             {"is_ringct"           , td.m_rct}
         };
+        cerr << "5 *****" << endl;
 
         ++output_no;
 
@@ -4381,8 +4408,10 @@ search_txs(vector<transaction> txs, const string& search_text)
                                 k_image = boost::get<cryptonote::txin_offshore>(in_key).k_image;
                             } else if (in_key.type() == typeid(cryptonote::txin_onshore)) {
                                 k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
-                            } else {
-                                k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+                            } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
+                              k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+                            } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+                              k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
                             }
                             return pod_to_hex(k_image) == search_text;
                         });
@@ -4686,10 +4715,14 @@ json_transaction(string tx_hash_str)
             amount = boost::get<cryptonote::txin_onshore>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
-        } else {
+        } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
             amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+        } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+            amount = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(in_key).key_offsets;
+            k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
         }
 
         // get absolute offsets of mixins
@@ -6444,10 +6477,14 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
             amount = boost::get<cryptonote::txin_onshore>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_onshore>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
-        } else {
+        } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
             amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
             key_offsets = boost::get<cryptonote::txin_xasset>(in_key).key_offsets;
             k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+        } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+            amount = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+            key_offsets = boost::get<cryptonote::txin_haven_key>(in_key).key_offsets;
+            k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
         }
 
         if (show_part_of_inputs && (input_idx > max_no_of_inputs_to_show))
@@ -6707,11 +6744,8 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
     bool has_xasset = false;
     std::string out_xasset_type = "";
 
-    cerr << "HBD : got " << txd.output_pub_keys.size() << " output keys" << endl;
-    
     for (pair<txout_target_v, uint64_t>& outp: txd.output_pub_keys)
     {
-
         // total number of ouputs in the blockchain for this amount
         uint64_t num_outputs_amount = core_storage->get_db()
                 .get_num_outputs(outp.second);
@@ -6744,6 +6778,34 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
             out_key = boost::get<cryptonote::txout_xasset>(outp.first).key;
             currency = boost::get<cryptonote::txout_xasset>(outp.first).asset_type;
             out_xasset_type = currency;
+        } else if (outp.first.type() == typeid(txout_haven_key)) {
+            out_key = boost::get<cryptonote::txout_haven_key>(outp.first).key;
+            currency = boost::get<cryptonote::txout_haven_key>(outp.first).asset_type;
+            if (currency == "XHV") {
+              has_xhv = true;
+              outputs_xmr_sum += outp.second;
+            } else if (currency == "XUSD") {
+              has_xusd = true;
+              outputs_xusd_sum += outp.second;
+            } else {
+              has_xasset = true;
+              out_xasset_type = currency;
+              outputs_xasset_sum += outp.second;
+            }
+        } else if (outp.first.type() == typeid(txout_haven_tagged_key)) {
+            out_key = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).key;
+            currency = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).asset_type;
+            if (currency == "XHV") {
+              has_xhv = true;
+              outputs_xmr_sum += outp.second;
+            } else if (currency == "XUSD") {
+              has_xusd = true;
+              outputs_xusd_sum += outp.second;
+            } else {
+              has_xasset = true;
+              out_xasset_type = currency;
+              outputs_xasset_sum += outp.second;
+            }
         }
         
         outputs.push_back(
@@ -7143,6 +7205,12 @@ are_absolute_offsets_good(
     } else if (in_key.type() == typeid(cryptonote::txin_onshore)) {
         amount = boost::get<cryptonote::txin_onshore>(in_key).amount;
         k_image = boost::get<cryptonote::txin_onshore>(in_key).k_image;
+    } else if (in_key.type() == typeid(cryptonote::txin_xasset)) {
+        amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
+        k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
+    } else if (in_key.type() == typeid(cryptonote::txin_haven_key)) {
+        amount = boost::get<cryptonote::txin_haven_key>(in_key).amount;
+        k_image = boost::get<cryptonote::txin_haven_key>(in_key).k_image;
     } else {
         amount = boost::get<cryptonote::txin_xasset>(in_key).amount;
         k_image = boost::get<cryptonote::txin_xasset>(in_key).k_image;
