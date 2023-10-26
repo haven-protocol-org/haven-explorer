@@ -33,6 +33,7 @@
 
 #include "../ext/mstch/src/visitor/render_node.hpp"
 
+/*
 extern "C" uint64_t me_rx_seedheight(const uint64_t height);
 
 // forked version of the rx_slow_hash from monero
@@ -42,7 +43,8 @@ extern "C" void me_rx_slow_hash(const uint64_t mainheight, const uint64_t seedhe
                              char *hash, int miners, int is_alt);
 //extern "C" void me_rx_reorg(const uint64_t split_height);
 
-extern  __thread randomx_vm *rx_vm;
+extern  __thread randomx_vm *main_vm_full;
+*/
 
 #include <algorithm>
 #include <limits>
@@ -276,6 +278,7 @@ me_get_block_longhash(const Blockchain *pbc,
     return true;
   }
   blobdata bd = get_block_hashing_blob(b);
+  /*
   if (b.major_version >= RX_BLOCK_VERSION)
   {
     uint64_t seed_height, main_height;
@@ -297,6 +300,7 @@ me_get_block_longhash(const Blockchain *pbc,
                     hash.data, bd.data(),
                     bd.size(), res.data, miners, 0);
   }
+  */
   return true;
 }
 
@@ -1271,6 +1275,7 @@ show_block(string _blk_hash)
     return show_block(blk_height);
 }
 
+/*
 string
 show_randomx(uint64_t _blk_height)
 {
@@ -1334,6 +1339,7 @@ show_randomx(uint64_t _blk_height)
 
     return mstch::render(template_file["randomx"], context);
 }
+*/
 
 string
 show_tx(string tx_hash_str, uint16_t with_ring_signatures = 0, bool refresh_page = false)
@@ -7306,6 +7312,7 @@ get_tx(string const& tx_hash_str,
     return true;
 }
 
+/*
 vector<randomx_status>
 get_randomx_code(uint64_t blk_height, 
                  block const& blk,
@@ -7319,18 +7326,18 @@ get_randomx_code(uint64_t blk_height,
 
     std::lock_guard<std::mutex> lk {mtx};
 
-    if (!rx_vm)
+    if (!main_vm_full)
     {
 
         crypto::hash block_hash;
 
-        // this will create rx_vm instance if one
+        // this will create main_vm_full instance if one
         // does not exist
         me_get_block_longhash(core_storage, blk, block_hash, blk_height, 0);
 
-        if (!rx_vm)
+        if (!main_vm_full)
         {
-            cerr << "rx_vm is still null!";
+            cerr << "main_vm_full is still null!";
             return {};
         }
     }
@@ -7341,36 +7348,37 @@ get_randomx_code(uint64_t blk_height,
     alignas(16) uint64_t tempHash[8];
     blake2b(tempHash, sizeof(tempHash), bd.data(), bd.size(), nullptr, 0); 
 
-    rx_vm->initScratchpad(&tempHash);
-    rx_vm->resetRoundingMode();
+    main_vm_full->initScratchpad(&tempHash);
+    main_vm_full->resetRoundingMode();
 
     for (int chain = 0; chain < RANDOMX_PROGRAM_COUNT - 1; ++chain) 
     {
-        rx_vm->run(&tempHash);
+        main_vm_full->run(&tempHash);
 
         blake2b(tempHash, sizeof(tempHash), 
-                rx_vm->getRegisterFile(), 
+                main_vm_full->getRegisterFile(), 
                 sizeof(randomx::RegisterFile), nullptr, 0); 
 
         rx_code.push_back({});
 
-        rx_code.back().prog = rx_vm->getProgram();
-    	rx_code.back().reg_file = *(rx_vm->getRegisterFile());
+        rx_code.back().prog = main_vm_full->getProgram();
+    	rx_code.back().reg_file = *(main_vm_full->getRegisterFile());
     }   
 
-    rx_vm->run(&tempHash);
+    main_vm_full->run(&tempHash);
 
     rx_code.push_back({});
 
-    rx_code.back().prog = rx_vm->getProgram();
-    rx_code.back().reg_file = *(rx_vm->getRegisterFile());
+    rx_code.back().prog = main_vm_full->getProgram();
+    rx_code.back().reg_file = *(main_vm_full->getRegisterFile());
 
     //crypto::hash res2;
-    //rx_vm->getFinalResult(res2.data, RANDOMX_HASH_SIZE);
+    //main_vm_full->getFinalResult(res2.data, RANDOMX_HASH_SIZE);
     //cout << "pow2: " << pod_to_hex(res2) << endl;
 
     return rx_code;
 }
+*/
 
 template <typename T, typename... Args>
 typename std::enable_if<
