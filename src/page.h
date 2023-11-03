@@ -2319,7 +2319,13 @@ show_my_outputs(string tx_hash_str,
         out_key = boost::get<cryptonote::txout_offshore>(outp.first).key;
         else if (outp.first.type() == typeid(txout_xasset))
         out_key = boost::get<cryptonote::txout_xasset>(outp.first).key;
-
+        else if (outp.first.type() == typeid(txout_haven_key))
+        out_key = boost::get<cryptonote::txout_haven_key>(outp.first).key;
+        else if (outp.first.type() == typeid(txout_haven_tagged_key))
+        out_key = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).key;
+        else
+          return string("Should be calling 'get_output_public_key()!!!'");
+        
         bool mine_output = (out_key == tx_pubkey);
 
         bool with_additional = false;
@@ -2377,6 +2383,10 @@ show_my_outputs(string tx_hash_str,
             currency = "XUSD";
         else if (outp.first.type() == typeid(txout_xasset))
             currency = boost::get<cryptonote::txout_xasset>(outp.first).asset_type;
+        else if (outp.first.type() == typeid(txout_haven_key))
+            currency = boost::get<cryptonote::txout_haven_key>(outp.first).asset_type;
+        else if (outp.first.type() == typeid(txout_haven_tagged_key))
+            currency = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).asset_type;
 
         if (mine_output)
         {
@@ -2667,6 +2677,7 @@ show_my_outputs(string tx_hash_str,
                 bool ok = cryptonote::get_output_public_key(tx.vout[i], output_public_key);
                 if (!ok) {
                   // HERE BE DRAGONS!!!
+                  return string("get_output_public_key() failed");
                 }
                 bool mine_output = (output_public_key == tx_pubkey_generated);
 
@@ -3087,6 +3098,10 @@ show_checkrawtx(string raw_tx_data, string action)
                         real_out_pub_key = boost::get<cryptonote::txout_offshore>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
                     else if (real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first.type() == typeid(txout_xasset))
                         real_out_pub_key = boost::get<cryptonote::txout_xasset>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
+                    else if (real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first.type() == typeid(txout_haven_key))
+                        real_out_pub_key = boost::get<cryptonote::txout_haven_key>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
+                    else if (real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first.type() == typeid(txout_haven_tagged_key))
+                        real_out_pub_key = boost::get<cryptonote::txout_haven_tagged_key>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
 
                     //cout << "real_txd.hash: "    << pod_to_hex(real_txd.hash) << endl;
                     //cout << "real_txd.pk: "      << pod_to_hex(real_txd.pk) << endl;
@@ -3143,6 +3158,10 @@ show_checkrawtx(string raw_tx_data, string action)
                             out_pub_key = boost::get<cryptonote::txout_offshore>(txd.output_pub_keys[toi.second].first).key;
                         else if (txd.output_pub_keys[toi.second].first.type() == typeid(txout_xasset))
                             out_pub_key = boost::get<cryptonote::txout_xasset>(txd.output_pub_keys[toi.second].first).key;
+                        else if (txd.output_pub_keys[toi.second].first.type() == typeid(txout_haven_key))
+                            out_pub_key = boost::get<cryptonote::txout_haven_key>(txd.output_pub_keys[toi.second].first).key;
+                        else if (txd.output_pub_keys[toi.second].first.type() == typeid(txout_haven_tagged_key))
+                            out_pub_key = boost::get<cryptonote::txout_haven_tagged_key>(txd.output_pub_keys[toi.second].first).key;
 
 
                         // get block cointaining this tx
@@ -3476,6 +3495,10 @@ show_checkrawtx(string raw_tx_data, string action)
                     real_out_pub_key = boost::get<cryptonote::txout_offshore>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
                 else if (real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first.type() == typeid(txout_xasset))
                     real_out_pub_key = boost::get<cryptonote::txout_xasset>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
+                else if (real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first.type() == typeid(txout_haven_key))
+                    real_out_pub_key = boost::get<cryptonote::txout_haven_key>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
+                else if (real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first.type() == typeid(txout_haven_tagged_key))
+                    real_out_pub_key = boost::get<cryptonote::txout_haven_tagged_key>(real_txd.output_pub_keys[tx_source.real_output_in_tx_index].first).key;
 
                 real_output_pub_keys.push_back(
                         REMOVE_HASH_BRAKETS(fmt::format("{:s}",real_out_pub_key))
@@ -4147,7 +4170,9 @@ show_checkcheckrawoutput(string raw_data, string viewkey_str)
                     string error_msg = fmt::format("Cant decode RingCT for output: {:s}",
                         txp.vout[td.m_internal_output_index].target.type() == typeid(txout_to_key) ? boost::get<txout_to_key>(txp.vout[td.m_internal_output_index].target).key :
                         txp.vout[td.m_internal_output_index].target.type() == typeid(txout_offshore) ? boost::get<txout_offshore>(txp.vout[td.m_internal_output_index].target).key :
-                    boost::get<txout_xasset>(txp.vout[td.m_internal_output_index].target).key);
+                        txp.vout[td.m_internal_output_index].target.type() == typeid(txout_xasset) ? boost::get<txout_xasset>(txp.vout[td.m_internal_output_index].target).key :
+                        txp.vout[td.m_internal_output_index].target.type() == typeid(txout_haven_key) ? boost::get<txout_haven_key>(txp.vout[td.m_internal_output_index].target).key :
+                    boost::get<txout_haven_tagged_key>(txp.vout[td.m_internal_output_index].target).key);
                   cerr << "4 *****" << endl;
 
                     context["has_error"] = true;
@@ -4184,7 +4209,9 @@ show_checkcheckrawoutput(string raw_data, string viewkey_str)
 	        {"output_pub_key"      , REMOVE_HASH_BRAKETS(fmt::format("{:s}",
 								     txp.vout[td.m_internal_output_index].target.type() == typeid(txout_to_key) ? boost::get<txout_to_key>(txp.vout[td.m_internal_output_index].target).key :
 								     txp.vout[td.m_internal_output_index].target.type() == typeid(txout_offshore) ? boost::get<txout_offshore>(txp.vout[td.m_internal_output_index].target).key :
-								      boost::get<txout_xasset>(txp.vout[td.m_internal_output_index].target).key
+								     txp.vout[td.m_internal_output_index].target.type() == typeid(txout_xasset) ? boost::get<txout_xasset>(txp.vout[td.m_internal_output_index].target).key :
+								     txp.vout[td.m_internal_output_index].target.type() == typeid(txout_haven_key) ? boost::get<txout_haven_key>(txp.vout[td.m_internal_output_index].target).key :
+								      boost::get<txout_haven_tagged_key>(txp.vout[td.m_internal_output_index].target).key
                                     ))
             },
 	        {"amount"              , xmreg::xmr_amount_to_str(xmr_amount)},
@@ -4458,6 +4485,10 @@ search_txs(vector<transaction> txs, const string& search_text)
                 return pod_to_hex(boost::get<cryptonote::txout_offshore>(tx_out_pk.first).key) == search_text;
 			  else if (tx_out_pk.first.type() == typeid(txout_xasset))
                 return pod_to_hex(boost::get<cryptonote::txout_xasset>(tx_out_pk.first).key) == search_text;
+			  else if (tx_out_pk.first.type() == typeid(txout_haven_key))
+                return pod_to_hex(boost::get<cryptonote::txout_haven_key>(tx_out_pk.first).key) == search_text;
+			  else if (tx_out_pk.first.type() == typeid(txout_haven_tagged_key))
+                return pod_to_hex(boost::get<cryptonote::txout_haven_tagged_key>(tx_out_pk.first).key) == search_text;
             }
         );
 
@@ -4693,6 +4724,10 @@ json_transaction(string tx_hash_str)
             out_key = boost::get<cryptonote::txout_offshore>(output.first).key;
         else if (output.first.type() == typeid(txout_xasset))
             out_key = boost::get<cryptonote::txout_xasset>(output.first).key;
+        else if (output.first.type() == typeid(txout_haven_key))
+            out_key = boost::get<cryptonote::txout_haven_key>(output.first).key;
+        else if (output.first.type() == typeid(txout_haven_tagged_key))
+            out_key = boost::get<cryptonote::txout_haven_tagged_key>(output.first).key;
             
         outputs.push_back(json {
             {"public_key", pod_to_hex(out_key)},
@@ -5628,6 +5663,10 @@ json_outputs(string tx_hash_str,
             out_key = boost::get<cryptonote::txout_offshore>(outp.first).key;
         else if (outp.first.type() == typeid(txout_xasset))
             out_key = boost::get<cryptonote::txout_xasset>(outp.first).key;
+        else if (outp.first.type() == typeid(txout_haven_key))
+            out_key = boost::get<cryptonote::txout_haven_key>(outp.first).key;
+        else if (outp.first.type() == typeid(txout_haven_tagged_key))
+            out_key = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).key;
             
         bool mine_output = (out_key == tx_pubkey);
         bool with_additional = false;
@@ -6147,6 +6186,12 @@ find_our_outputs(
             } else if (outp.first.type() == typeid(txout_xasset)) {
             out_key = boost::get<cryptonote::txout_xasset>(outp.first).key;
             currency_str = boost::get<cryptonote::txout_xasset>(outp.first).asset_type;
+            } else if (outp.first.type() == typeid(txout_haven_key)) {
+            out_key = boost::get<cryptonote::txout_haven_key>(outp.first).key;
+            currency_str = boost::get<cryptonote::txout_haven_key>(outp.first).asset_type;
+            } else if (outp.first.type() == typeid(txout_haven_tagged_key)) {
+            out_key = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).key;
+            currency_str = boost::get<cryptonote::txout_haven_tagged_key>(outp.first).asset_type;
             }
 
 	        bool mine_output = (out_key == tx_pubkey);
