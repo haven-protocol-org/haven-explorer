@@ -971,6 +971,8 @@ decode_ringct(rct::rctSig const& rv,
             case rct::RCTTypeCLSAG:
             case rct::RCTTypeCLSAGN:
             case rct::RCTTypeHaven2:
+            case rct::RCTTypeHaven3:
+            case rct::RCTTypeBulletproofPlus:
                 amount = rct::decodeRctSimple(rv,
                                               rct::sk2rct(scalar1),
                                               i,
